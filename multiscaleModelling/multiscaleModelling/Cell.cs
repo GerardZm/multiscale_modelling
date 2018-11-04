@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace multiscaleModelling
+﻿namespace multiscaleModelling
 {
-    class Cell
+    struct Cell
     {
-        public int grainId = 0;
-
+        public int grainId;
+        public int x;
+        public int y;
     }
 }

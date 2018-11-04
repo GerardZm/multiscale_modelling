@@ -35,19 +35,19 @@
             this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.nucleonAmmountTextbox = new System.Windows.Forms.NumericUpDown();
-            this.simulateButton = new System.Windows.Forms.Button();
-            this.xSizeTextbox = new System.Windows.Forms.NumericUpDown();
             this.ySizeTextbox = new System.Windows.Forms.NumericUpDown();
+            this.xSizeTextbox = new System.Windows.Forms.NumericUpDown();
+            this.nucleonAmmountTextbox = new System.Windows.Forms.NumericUpDown();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.simulateButton = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nucleonAmmountTextbox)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.xSizeTextbox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ySizeTextbox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.xSizeTextbox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nucleonAmmountTextbox)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -80,14 +80,14 @@
             // importToolStripMenuItem
             // 
             this.importToolStripMenuItem.Name = "importToolStripMenuItem";
-            this.importToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.importToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
             this.importToolStripMenuItem.Text = "Import";
             this.importToolStripMenuItem.Click += new System.EventHandler(this.importToolStripMenuItem_Click);
             // 
             // exportToolStripMenuItem
             // 
             this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-            this.exportToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
             this.exportToolStripMenuItem.Text = "Export";
             this.exportToolStripMenuItem.Click += new System.EventHandler(this.exportToolStripMenuItem_Click);
             // 
@@ -96,6 +96,7 @@
             this.pictureBox1.Location = new System.Drawing.Point(13, 28);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(194, 167);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             // 
@@ -112,23 +113,26 @@
             this.panel1.Size = new System.Drawing.Size(122, 92);
             this.panel1.TabIndex = 2;
             // 
-            // label1
+            // ySizeTextbox
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(7, 4);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(32, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "xSize";
+            this.ySizeTextbox.Location = new System.Drawing.Point(69, 21);
+            this.ySizeTextbox.Name = "ySizeTextbox";
+            this.ySizeTextbox.Size = new System.Drawing.Size(42, 20);
+            this.ySizeTextbox.TabIndex = 7;
             // 
-            // label2
+            // xSizeTextbox
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(66, 4);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(32, 13);
-            this.label2.TabIndex = 1;
-            this.label2.Text = "ySize";
+            this.xSizeTextbox.Location = new System.Drawing.Point(7, 21);
+            this.xSizeTextbox.Name = "xSizeTextbox";
+            this.xSizeTextbox.Size = new System.Drawing.Size(42, 20);
+            this.xSizeTextbox.TabIndex = 6;
+            // 
+            // nucleonAmmountTextbox
+            // 
+            this.nucleonAmmountTextbox.Location = new System.Drawing.Point(7, 63);
+            this.nucleonAmmountTextbox.Name = "nucleonAmmountTextbox";
+            this.nucleonAmmountTextbox.Size = new System.Drawing.Size(108, 20);
+            this.nucleonAmmountTextbox.TabIndex = 5;
             // 
             // label3
             // 
@@ -139,12 +143,23 @@
             this.label3.TabIndex = 4;
             this.label3.Text = "Nucleon ammount";
             // 
-            // nucleonAmmountTextbox
+            // label2
             // 
-            this.nucleonAmmountTextbox.Location = new System.Drawing.Point(7, 63);
-            this.nucleonAmmountTextbox.Name = "nucleonAmmountTextbox";
-            this.nucleonAmmountTextbox.Size = new System.Drawing.Size(108, 20);
-            this.nucleonAmmountTextbox.TabIndex = 5;
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(66, 4);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(32, 13);
+            this.label2.TabIndex = 1;
+            this.label2.Text = "ySize";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(7, 4);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(32, 13);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "xSize";
             // 
             // simulateButton
             // 
@@ -155,20 +170,6 @@
             this.simulateButton.Text = "Simulate";
             this.simulateButton.UseVisualStyleBackColor = true;
             this.simulateButton.Click += new System.EventHandler(this.simulateButton_Click);
-            // 
-            // xSizeTextbox
-            // 
-            this.xSizeTextbox.Location = new System.Drawing.Point(7, 21);
-            this.xSizeTextbox.Name = "xSizeTextbox";
-            this.xSizeTextbox.Size = new System.Drawing.Size(42, 20);
-            this.xSizeTextbox.TabIndex = 6;
-            // 
-            // ySizeTextbox
-            // 
-            this.ySizeTextbox.Location = new System.Drawing.Point(69, 21);
-            this.ySizeTextbox.Name = "ySizeTextbox";
-            this.ySizeTextbox.Size = new System.Drawing.Size(42, 20);
-            this.ySizeTextbox.TabIndex = 7;
             // 
             // Form1
             // 
@@ -187,9 +188,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nucleonAmmountTextbox)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.xSizeTextbox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ySizeTextbox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.xSizeTextbox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nucleonAmmountTextbox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
