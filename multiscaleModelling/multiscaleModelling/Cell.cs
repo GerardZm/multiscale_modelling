@@ -3,7 +3,7 @@
     struct Cell
     {
         public int grainId;
-        public int x;
-        public int y;
+        public int row;
+        public int column;
     }
 }
