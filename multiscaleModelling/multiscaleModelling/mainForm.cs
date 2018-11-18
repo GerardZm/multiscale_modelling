@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -123,6 +124,17 @@ namespace multiscaleModelling
                     while (hasUnassignedElement() && !forceBreak)
                     {
                         propagate();
+                        // once finished, add to array of steps
+                        Thread.Sleep(10);
+                        stepsAsBytes.Add(crateByteArray());
+                        this.Invoke(new Action(() => {
+                            showImage(stepsAsBytes.Count - 1);
+                        }));
+                    }
+                    // now inclusions
+                    if ((int)precipitatesTextbox.Value > 0)
+                    {
+                        addInclusios();
                     }
                     forceBreak = false;
                 });
@@ -192,6 +204,11 @@ namespace multiscaleModelling
                 byte[] singleColorArray = new byte[] { blue, green, red };
                 colorArray.Add(singleColorArray);
             }
+        }
+
+        private void addNewColorToPalette()
+        {
+
         }
 
         private void showImage(int step)
@@ -268,7 +285,7 @@ namespace multiscaleModelling
             return false;
         }
         
-        private void propagate()
+        private async void propagate()
         {
             // iterate through whole array and propagate nucleon growth
             Cell[,] previousStepArray = Utils.Copy(space); // first create independent copy of Cell array struct
@@ -277,11 +294,12 @@ namespace multiscaleModelling
                 if (c.grainId == 0) // value change will occur only in currently independent cells
                 {
                     // create counters for each color
-                    List<int> countersOfGrainsSurroundingCell = new List<int>();
-                    for (int i = 0; i <= nucleonAmmountTextbox.Value; i++)
+                    //List<int> countersOfGrainsSurroundingCell = new List<int>();
+                    Dictionary<int, int> countersOfGrainsSurroundingCell = new Dictionary<int, int>();
+                    /*for (int i = 0; i <= nucleonAmmountTextbox.Value; i++)
                     {
                         countersOfGrainsSurroundingCell.Add(0); // counter initiated with 0
-                    }
+                    }*/
                     /* Check neighbours:
                      *  -------
                      *  | | | |
@@ -304,18 +322,29 @@ namespace multiscaleModelling
                     };
 
                     // check each of coords
-                    foreach (var pair in valuesToCheck)
+                    for (int i = 0; i < valuesToCheck.Count; i++)
                     {
-                        int gainValue = Utils.getGrainIdFromCoords(pair[0], pair[1], previousStepArray);
-                        if (gainValue != 0)
+                        if (valuesToCheck[i][0] >= 0 && valuesToCheck[i][0] < xSize && valuesToCheck[i][1] >= 0 && valuesToCheck[i][1] < ySize)
                         {
-                            countersOfGrainsSurroundingCell[gainValue] += 1;
+                            int gainValue = Utils.getGrainIdFromCoords(valuesToCheck[i][0], valuesToCheck[i][1], ref previousStepArray);
+                            if (gainValue != 0)
+                            {
+                                //countersOfGrainsSurroundingCell[gainValue] += 1;
+                                if (countersOfGrainsSurroundingCell.ContainsKey(gainValue))
+                                    countersOfGrainsSurroundingCell[gainValue] += 1;
+                                else
+                                    countersOfGrainsSurroundingCell.Add(gainValue, 1);
+                            }
                         }
                     }
                     // check which grainIds are in neighbourhood
-                    int highestValue = -1;
-                    int mostPopularGrainId = -1;
-                    for (int i = 0; i < countersOfGrainsSurroundingCell.Count; i++)
+                    //int highestValue = -1;
+                    //int mostPopularGrainId = -1;
+                    if (countersOfGrainsSurroundingCell.Count > 0)
+                    {
+                        space[c.row, c.column].grainId = countersOfGrainsSurroundingCell.Aggregate((a, b) => a.Value > b.Value ? a : b).Key;
+                    }
+                    /*for (int i = 0; i < countersOfGrainsSurroundingCell.Count; i++)
                     {
                         if (countersOfGrainsSurroundingCell[i] > 0)
                         {
@@ -331,17 +360,62 @@ namespace multiscaleModelling
                                 highestValue = countersOfGrainsSurroundingCell[mostPopularGrainId];
                             }
                         }                        
-                    }
+                    }*/
                     // change to most popular surrounding if any surrounding found
-                    if (mostPopularGrainId > -1)
-                        space[c.row, c.column].grainId = mostPopularGrainId;
+                    //if (mostPopularGrainId > -1)
+                    //    space[c.row, c.column].grainId = mostPopularGrainId;
                 }
             }
+        }
+
+        private void addInclusios()
+        {
+            for(int i = 0; i < precipitatesTextbox.Value; i++)
+            {
+                Cell newInclusionCell;
+                if (randomPositionRadio.Checked == true)
+                {
+
+                }
+                else if (gbPositionRadio.Checked == true)
+                {
+
+                }
+            }
+
             // once finished, add to array of steps
             stepsAsBytes.Add(crateByteArray());
             this.Invoke(new Action(() => {
                 showImage(stepsAsBytes.Count - 1);
             }));
+        }
+
+        private bool isGrainBoundary(Cell localCell)
+        {
+            // check if more than 1 grain color is in range of 1
+            if (neighboursInRange(1, localCell).Count > 1)
+                return true;
+            return false;
+        }
+
+        private List<Cell> neighboursInRange(int range, Cell checkedCell)
+        {
+            // first initiate function variables
+            List<Cell> neighbourList = new List<Cell>();
+            int checkedLocationRow = checkedCell.row;
+            int checkedLocationColumn = checkedCell.column;
+
+            // now search space for neighbour colors
+            // look only in cells +- range from cell
+            for (int _col=range-3; _col <= range+3; _col++)
+            {
+                for (int _row = range - 3; _row <= range + 3; _row++)
+                {
+                    if (space[_row, _col].grainId > 0 && ((_row - checkedLocationRow) ^ 2 + (_col - checkedLocationColumn) ^ 2) < (range^2))
+                        neighbourList.Add(space[_row, _col]);
+                }
+            }
+            return neighbourList;
         }
 
         private void saveToFile(string _filename = null)
@@ -391,6 +465,20 @@ namespace multiscaleModelling
         private void breakButton_Click(object sender, EventArgs e)
         {
             forceBreak = true;
+        }
+
+        private void precipiratesRadiusFromTextbox_ValueChanged(object sender, EventArgs e)
+        {
+            if (precipiratesRadiusToTextbox.Value < precipiratesRadiusFromTextbox.Value)
+                precipiratesRadiusToTextbox.Value = precipiratesRadiusFromTextbox.Value;
+        }
+
+        private void precipitatesTextbox_ValueChanged(object sender, EventArgs e)
+        {
+            if ((int)precipitatesTextbox.Value > 0)
+                precipitatesPanel.Visible = true;
+            else
+                precipitatesPanel.Visible = false;
         }
     }
 }

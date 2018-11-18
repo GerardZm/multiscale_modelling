@@ -23,7 +23,7 @@ namespace multiscaleModelling
             return newArray;
         }
 
-        public static int getGrainIdFromCoords(int x, int y, Cell[,] array)
+        public static int getGrainIdFromCoords(int x, int y, ref Cell[,] array)
         {
             try
             {

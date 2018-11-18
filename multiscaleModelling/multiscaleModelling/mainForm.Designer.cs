@@ -45,14 +45,25 @@
             this.stepShowPanel = new System.Windows.Forms.Panel();
             this.firstStepButton = new System.Windows.Forms.Button();
             this.lastStepButton = new System.Windows.Forms.Button();
-            this.previousStepButton = new System.Windows.Forms.Button();
-            this.nextStepButton = new System.Windows.Forms.Button();
             this.stepCountLabel = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.currentStepLabel = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.breakButton = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
+            this.precipitatesTextbox = new System.Windows.Forms.NumericUpDown();
+            this.precipitatesPanel = new System.Windows.Forms.Panel();
+            this.label7 = new System.Windows.Forms.Label();
+            this.randomPositionRadio = new System.Windows.Forms.RadioButton();
+            this.gbPositionRadio = new System.Windows.Forms.RadioButton();
+            this.label8 = new System.Windows.Forms.Label();
+            this.precipiratesRadiusFromTextbox = new System.Windows.Forms.NumericUpDown();
+            this.precipiratesRadiusFromLabel = new System.Windows.Forms.Label();
+            this.precipiratesRadiusToLabel = new System.Windows.Forms.Label();
+            this.precipiratesRadiusToTextbox = new System.Windows.Forms.NumericUpDown();
+            this.nextStepButton = new System.Windows.Forms.Button();
+            this.previousStepButton = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
@@ -60,6 +71,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.ySizeTextbox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nucleonAmmountTextbox)).BeginInit();
             this.stepShowPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.precipitatesTextbox)).BeginInit();
+            this.precipitatesPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.precipiratesRadiusFromTextbox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.precipiratesRadiusToTextbox)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -68,7 +83,7 @@
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(447, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(408, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -86,13 +101,13 @@
             this.importToolStripMenuItem,
             this.exportToolStripMenuItem});
             this.microstructureToolStripMenuItem.Name = "microstructureToolStripMenuItem";
-            this.microstructureToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.microstructureToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.microstructureToolStripMenuItem.Text = "Microstructure";
             // 
             // importToolStripMenuItem
             // 
             this.importToolStripMenuItem.Name = "importToolStripMenuItem";
-            this.importToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.importToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
             this.importToolStripMenuItem.Text = "Import";
             this.importToolStripMenuItem.Click += new System.EventHandler(this.importToolStripMenuItem_Click);
             // 
@@ -100,7 +115,7 @@
             // 
             this.exportToolStripMenuItem.Enabled = false;
             this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-            this.exportToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
             this.exportToolStripMenuItem.Text = "Export";
             this.exportToolStripMenuItem.Click += new System.EventHandler(this.exportToolStripMenuItem_Click);
             // 
@@ -115,20 +130,28 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.precipitatesPanel);
+            this.panel1.Controls.Add(this.precipitatesTextbox);
+            this.panel1.Controls.Add(this.label5);
             this.panel1.Controls.Add(this.xSizeTextbox);
             this.panel1.Controls.Add(this.ySizeTextbox);
             this.panel1.Controls.Add(this.nucleonAmmountTextbox);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.label1);
-            this.panel1.Location = new System.Drawing.Point(214, 28);
+            this.panel1.Location = new System.Drawing.Point(280, 27);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(122, 92);
+            this.panel1.Size = new System.Drawing.Size(122, 243);
             this.panel1.TabIndex = 2;
             // 
             // xSizeTextbox
             // 
             this.xSizeTextbox.Location = new System.Drawing.Point(7, 21);
+            this.xSizeTextbox.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
             this.xSizeTextbox.Name = "xSizeTextbox";
             this.xSizeTextbox.Size = new System.Drawing.Size(42, 20);
             this.xSizeTextbox.TabIndex = 1;
@@ -136,6 +159,11 @@
             // ySizeTextbox
             // 
             this.ySizeTextbox.Location = new System.Drawing.Point(73, 21);
+            this.ySizeTextbox.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
             this.ySizeTextbox.Name = "ySizeTextbox";
             this.ySizeTextbox.Size = new System.Drawing.Size(42, 20);
             this.ySizeTextbox.TabIndex = 2;
@@ -176,9 +204,9 @@
             // 
             // simulateButton
             // 
-            this.simulateButton.Location = new System.Drawing.Point(343, 28);
+            this.simulateButton.Location = new System.Drawing.Point(213, 28);
             this.simulateButton.Name = "simulateButton";
-            this.simulateButton.Size = new System.Drawing.Size(95, 48);
+            this.simulateButton.Size = new System.Drawing.Size(61, 48);
             this.simulateButton.TabIndex = 4;
             this.simulateButton.Text = "Simulate";
             this.simulateButton.UseVisualStyleBackColor = true;
@@ -222,26 +250,6 @@
             this.lastStepButton.UseVisualStyleBackColor = true;
             this.lastStepButton.Click += new System.EventHandler(this.lastStepButton_Click);
             // 
-            // previousStepButton
-            // 
-            this.previousStepButton.Location = new System.Drawing.Point(159, 1);
-            this.previousStepButton.Name = "previousStepButton";
-            this.previousStepButton.Size = new System.Drawing.Size(23, 23);
-            this.previousStepButton.TabIndex = 7;
-            this.previousStepButton.Text = "<";
-            this.previousStepButton.UseVisualStyleBackColor = true;
-            this.previousStepButton.Click += new System.EventHandler(this.previousStepButton_Click);
-            // 
-            // nextStepButton
-            // 
-            this.nextStepButton.Location = new System.Drawing.Point(188, 1);
-            this.nextStepButton.Name = "nextStepButton";
-            this.nextStepButton.Size = new System.Drawing.Size(23, 23);
-            this.nextStepButton.TabIndex = 8;
-            this.nextStepButton.Text = ">";
-            this.nextStepButton.UseVisualStyleBackColor = true;
-            this.nextStepButton.Click += new System.EventHandler(this.nextStepButton_Click);
-            // 
             // stepCountLabel
             // 
             this.stepCountLabel.AutoSize = true;
@@ -282,7 +290,7 @@
             // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(337, 2);
+            this.progressBar.Location = new System.Drawing.Point(302, 1);
             this.progressBar.MarqueeAnimationSpeed = 25;
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(100, 23);
@@ -293,19 +301,146 @@
             // breakButton
             // 
             this.breakButton.Enabled = false;
-            this.breakButton.Location = new System.Drawing.Point(343, 82);
+            this.breakButton.Location = new System.Drawing.Point(213, 82);
             this.breakButton.Name = "breakButton";
-            this.breakButton.Size = new System.Drawing.Size(95, 38);
+            this.breakButton.Size = new System.Drawing.Size(61, 38);
             this.breakButton.TabIndex = 5;
             this.breakButton.Text = "Break";
             this.breakButton.UseVisualStyleBackColor = true;
             this.breakButton.Click += new System.EventHandler(this.breakButton_Click);
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(4, 90);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(62, 13);
+            this.label5.TabIndex = 5;
+            this.label5.Text = "Precipitates";
+            // 
+            // precipitatesTextbox
+            // 
+            this.precipitatesTextbox.Location = new System.Drawing.Point(67, 88);
+            this.precipitatesTextbox.Name = "precipitatesTextbox";
+            this.precipitatesTextbox.Size = new System.Drawing.Size(48, 20);
+            this.precipitatesTextbox.TabIndex = 6;
+            this.precipitatesTextbox.ValueChanged += new System.EventHandler(this.precipitatesTextbox_ValueChanged);
+            // 
+            // precipitatesPanel
+            // 
+            this.precipitatesPanel.Controls.Add(this.precipiratesRadiusToTextbox);
+            this.precipitatesPanel.Controls.Add(this.precipiratesRadiusToLabel);
+            this.precipitatesPanel.Controls.Add(this.precipiratesRadiusFromLabel);
+            this.precipitatesPanel.Controls.Add(this.precipiratesRadiusFromTextbox);
+            this.precipitatesPanel.Controls.Add(this.label8);
+            this.precipitatesPanel.Controls.Add(this.gbPositionRadio);
+            this.precipitatesPanel.Controls.Add(this.randomPositionRadio);
+            this.precipitatesPanel.Controls.Add(this.label7);
+            this.precipitatesPanel.Location = new System.Drawing.Point(7, 115);
+            this.precipitatesPanel.Name = "precipitatesPanel";
+            this.precipitatesPanel.Size = new System.Drawing.Size(107, 122);
+            this.precipitatesPanel.TabIndex = 7;
+            this.precipitatesPanel.Visible = false;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(2, 3);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(104, 13);
+            this.label7.TabIndex = 8;
+            this.label7.Text = "Precipitates position:";
+            // 
+            // randomPositionRadio
+            // 
+            this.randomPositionRadio.AutoSize = true;
+            this.randomPositionRadio.Checked = true;
+            this.randomPositionRadio.Location = new System.Drawing.Point(4, 20);
+            this.randomPositionRadio.Name = "randomPositionRadio";
+            this.randomPositionRadio.Size = new System.Drawing.Size(65, 17);
+            this.randomPositionRadio.TabIndex = 9;
+            this.randomPositionRadio.TabStop = true;
+            this.randomPositionRadio.Text = "Random";
+            this.randomPositionRadio.UseVisualStyleBackColor = true;
+            // 
+            // gbPositionRadio
+            // 
+            this.gbPositionRadio.AutoSize = true;
+            this.gbPositionRadio.Location = new System.Drawing.Point(4, 44);
+            this.gbPositionRadio.Name = "gbPositionRadio";
+            this.gbPositionRadio.Size = new System.Drawing.Size(97, 17);
+            this.gbPositionRadio.TabIndex = 10;
+            this.gbPositionRadio.TabStop = true;
+            this.gbPositionRadio.Text = "Grain boundary";
+            this.gbPositionRadio.UseVisualStyleBackColor = true;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(2, 65);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(96, 13);
+            this.label8.TabIndex = 11;
+            this.label8.Text = "Precipitates radius:";
+            // 
+            // precipiratesRadiusFromTextbox
+            // 
+            this.precipiratesRadiusFromTextbox.Location = new System.Drawing.Point(7, 97);
+            this.precipiratesRadiusFromTextbox.Name = "precipiratesRadiusFromTextbox";
+            this.precipiratesRadiusFromTextbox.Size = new System.Drawing.Size(42, 20);
+            this.precipiratesRadiusFromTextbox.TabIndex = 8;
+            this.precipiratesRadiusFromTextbox.ValueChanged += new System.EventHandler(this.precipiratesRadiusFromTextbox_ValueChanged);
+            // 
+            // precipiratesRadiusFromLabel
+            // 
+            this.precipiratesRadiusFromLabel.AutoSize = true;
+            this.precipiratesRadiusFromLabel.Location = new System.Drawing.Point(9, 81);
+            this.precipiratesRadiusFromLabel.Name = "precipiratesRadiusFromLabel";
+            this.precipiratesRadiusFromLabel.Size = new System.Drawing.Size(33, 13);
+            this.precipiratesRadiusFromLabel.TabIndex = 12;
+            this.precipiratesRadiusFromLabel.Text = "From:";
+            // 
+            // precipiratesRadiusToLabel
+            // 
+            this.precipiratesRadiusToLabel.AutoSize = true;
+            this.precipiratesRadiusToLabel.Location = new System.Drawing.Point(59, 81);
+            this.precipiratesRadiusToLabel.Name = "precipiratesRadiusToLabel";
+            this.precipiratesRadiusToLabel.Size = new System.Drawing.Size(23, 13);
+            this.precipiratesRadiusToLabel.TabIndex = 13;
+            this.precipiratesRadiusToLabel.Text = "To:";
+            // 
+            // precipiratesRadiusToTextbox
+            // 
+            this.precipiratesRadiusToTextbox.Location = new System.Drawing.Point(56, 97);
+            this.precipiratesRadiusToTextbox.Name = "precipiratesRadiusToTextbox";
+            this.precipiratesRadiusToTextbox.Size = new System.Drawing.Size(42, 20);
+            this.precipiratesRadiusToTextbox.TabIndex = 14;
+            // 
+            // nextStepButton
+            // 
+            this.nextStepButton.Location = new System.Drawing.Point(188, 1);
+            this.nextStepButton.Name = "nextStepButton";
+            this.nextStepButton.Size = new System.Drawing.Size(23, 23);
+            this.nextStepButton.TabIndex = 8;
+            this.nextStepButton.Text = ">";
+            this.nextStepButton.UseVisualStyleBackColor = true;
+            this.nextStepButton.Click += new System.EventHandler(this.nextStepButton_Click);
+            // 
+            // previousStepButton
+            // 
+            this.previousStepButton.Location = new System.Drawing.Point(159, 1);
+            this.previousStepButton.Name = "previousStepButton";
+            this.previousStepButton.Size = new System.Drawing.Size(23, 23);
+            this.previousStepButton.TabIndex = 7;
+            this.previousStepButton.Text = "<";
+            this.previousStepButton.UseVisualStyleBackColor = true;
+            this.previousStepButton.Click += new System.EventHandler(this.previousStepButton_Click);
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(447, 237);
+            this.ClientSize = new System.Drawing.Size(408, 276);
             this.Controls.Add(this.breakButton);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.stepShowPanel);
@@ -328,6 +463,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.nucleonAmmountTextbox)).EndInit();
             this.stepShowPanel.ResumeLayout(false);
             this.stepShowPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.precipitatesTextbox)).EndInit();
+            this.precipitatesPanel.ResumeLayout(false);
+            this.precipitatesPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.precipiratesRadiusFromTextbox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.precipiratesRadiusToTextbox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -350,8 +490,6 @@
         private System.Windows.Forms.NumericUpDown xSizeTextbox;
         private System.Windows.Forms.NumericUpDown ySizeTextbox;
         private System.Windows.Forms.Panel stepShowPanel;
-        private System.Windows.Forms.Button previousStepButton;
-        private System.Windows.Forms.Button nextStepButton;
         private System.Windows.Forms.Label stepCountLabel;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label currentStepLabel;
@@ -360,6 +498,19 @@
         private System.Windows.Forms.Button lastStepButton;
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.Button breakButton;
+        private System.Windows.Forms.Panel precipitatesPanel;
+        private System.Windows.Forms.NumericUpDown precipitatesTextbox;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.RadioButton gbPositionRadio;
+        private System.Windows.Forms.RadioButton randomPositionRadio;
+        private System.Windows.Forms.NumericUpDown precipiratesRadiusToTextbox;
+        private System.Windows.Forms.Label precipiratesRadiusToLabel;
+        private System.Windows.Forms.Label precipiratesRadiusFromLabel;
+        private System.Windows.Forms.NumericUpDown precipiratesRadiusFromTextbox;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Button previousStepButton;
+        private System.Windows.Forms.Button nextStepButton;
     }
 }
 
