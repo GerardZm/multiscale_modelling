@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -16,8 +17,8 @@ namespace multiscaleModelling
         List<byte[]> colorArray;
         int numberOfPoints = 0;
         List<byte[]> stepsAsBytes = new List<byte[]>();
-        int xSize;
-        int ySize;
+        int xSize; // rows
+        int ySize; // columns
         int nucleonAmmount;
         bool forceBreak = false;
 
@@ -57,6 +58,21 @@ namespace multiscaleModelling
                         else
                             break; // something is wrong with file, break reading it
                     }
+                    else if (line == lines[1])
+                    {
+                        // second line contains information about inclusions
+                        string[] values = line.Split(',');
+                        if (values.Length == 4)
+                        {
+                            precipitatesTextbox.Value = Int32.Parse(values[0]);
+                            precipitatesRadiusFromTextbox.Value = Int32.Parse(values[1]);
+                            precipitatesRadiusToTextbox.Value = Int32.Parse(values[2]);
+                            if (Int32.Parse(values[3]) == 1)
+                                gbPositionRadio.Checked = true;
+                            else
+                                randomPositionRadio.Checked = true;
+                        }
+                    }
                     else
                     {
                         int column = 0;
@@ -75,6 +91,12 @@ namespace multiscaleModelling
                 stepsAsBytes = new List<byte[]>();
                 numberOfPoints = 0;
                 createColorPalette();
+                if ((int)precipitatesTextbox.Value > 0) // if inclusions were used, show them on the drawing as black color
+                {
+                    colorArray[colorArray.Count - 1] = new byte[] { 0, 0, 0, 255 };
+                    // also decrease nucleon ammount by 1
+                    nucleonAmmountTextbox.Value = nucleonAmmount -= 1;
+                }
                 // once finished, create only single, last step image and show it
                 stepsAsBytes.Add(crateByteArray());
                 showImage(0);
@@ -98,14 +120,17 @@ namespace multiscaleModelling
         private async void simulateButton_Click(object sender, EventArgs e)
         {
             // first safety check - x, y and nuclei ammount has to be specified
-            if (ySizeTextbox.Value > 0 && xSizeTextbox.Value > 0 && nucleonAmmountTextbox.Value > 0)
+            if (ySizeTextbox.Value > 0 && xSizeTextbox.Value > 0 && nucleonAmmountTextbox.Value > 0 && !(precipitatesRadiusToTextbox.Value < precipitatesRadiusFromTextbox.Value) && precipitatesRadiusToTextbox.Value > 0 && precipitatesRadiusFromTextbox.Value > 0)
             {
                 progressBar.Visible = true;
+                stepShowPanel.Visible = false;
                 simulateButton.Enabled = false;
                 breakButton.Enabled = true;
                 xSizeTextbox.Enabled = false;
                 ySizeTextbox.Enabled = false;
                 nucleonAmmountTextbox.Enabled = false;
+                precipitatesTextbox.Enabled = false;
+                precipitatesPanel.Enabled = false;
                 await Task.Run(() => {
                     xSize = (int)ySizeTextbox.Value;
                     ySize = (int)xSizeTextbox.Value;
@@ -123,6 +148,17 @@ namespace multiscaleModelling
                     while (hasUnassignedElement() && !forceBreak)
                     {
                         propagate();
+                        // once finished, add to array of steps
+                        Thread.Sleep(5);
+                        stepsAsBytes.Add(crateByteArray());
+                        this.Invoke(new Action(() => {
+                            showImage(stepsAsBytes.Count - 1);
+                        }));
+                    }
+                    // now inclusions
+                    if ((int)precipitatesTextbox.Value > 0)
+                    {
+                        addInclusios();
                     }
                     forceBreak = false;
                 });
@@ -131,6 +167,9 @@ namespace multiscaleModelling
                 if (stepsAsBytes.Count > 1)
                 {
                     stepShowPanel.Visible = true;
+                    stepSlider.Visible = true;
+                    stepSlider.Maximum = stepsAsBytes.Count;
+                    stepSlider.Value = stepsAsBytes.Count;
                 }
                 exportToolStripMenuItem.Enabled = true;
                 progressBar.Visible = false;
@@ -138,6 +177,8 @@ namespace multiscaleModelling
                 xSizeTextbox.Enabled = true;
                 ySizeTextbox.Enabled = true;
                 nucleonAmmountTextbox.Enabled = true;
+                precipitatesTextbox.Enabled = true;
+                precipitatesPanel.Enabled = true;
             }
         }
 
@@ -182,16 +223,25 @@ namespace multiscaleModelling
         private void createColorPalette()
         {
             colorArray = new List<byte[]>();
-            Random rng = new Random();
             for (int i = 0; i < (int)nucleonAmmountTextbox.Value; i++)
             {
-                // B G R
-                byte blue = (byte)rng.Next(0, 200);
-                byte green = (byte)rng.Next(0, 200);
-                byte red = (byte)rng.Next(0, 200);
-                byte[] singleColorArray = new byte[] { blue, green, red };
-                colorArray.Add(singleColorArray);
+                byte[] newColor = createNewColor();
+                // make sure that this color does not already exist in the palette
+                while(Utils.colorAlreadyExistsInColorPalette(newColor, colorArray))
+                    newColor = createNewColor();
+                colorArray.Add(newColor);
             }
+        }
+
+        private byte[] createNewColor()
+        {
+            Random rng = new Random();
+            // B G R
+            byte blue = (byte)rng.Next(0, 200);
+            byte green = (byte)rng.Next(0, 200);
+            byte red = (byte)rng.Next(0, 200);
+            byte[] singleColorArray = new byte[] { blue, green, red };
+            return singleColorArray;
         }
 
         private void showImage(int step)
@@ -201,20 +251,6 @@ namespace multiscaleModelling
             // adapt step navigation panel
             this.currentStepLabel.Text = step.ToString();
             this.stepCountLabel.Text = (stepsAsBytes.Count-1).ToString();
-            this.nextStepButton.Enabled = true;
-            this.lastStepButton.Enabled = true;
-            this.previousStepButton.Enabled = true;
-            this.firstStepButton.Enabled = true;
-            if (step == 1)
-            {
-                this.previousStepButton.Enabled = false;
-                this.firstStepButton.Enabled = false;
-            }
-            else if (step == stepsAsBytes.Count - 1)
-            {
-                this.nextStepButton.Enabled = false;
-                this.lastStepButton.Enabled = false;
-            }
         }
 
         private byte[] crateByteArray()
@@ -277,11 +313,12 @@ namespace multiscaleModelling
                 if (c.grainId == 0) // value change will occur only in currently independent cells
                 {
                     // create counters for each color
-                    List<int> countersOfGrainsSurroundingCell = new List<int>();
-                    for (int i = 0; i <= nucleonAmmountTextbox.Value; i++)
+                    //List<int> countersOfGrainsSurroundingCell = new List<int>();
+                    Dictionary<int, int> countersOfGrainsSurroundingCell = new Dictionary<int, int>();
+                    /*for (int i = 0; i <= nucleonAmmountTextbox.Value; i++)
                     {
                         countersOfGrainsSurroundingCell.Add(0); // counter initiated with 0
-                    }
+                    }*/
                     /* Check neighbours:
                      *  -------
                      *  | | | |
@@ -304,18 +341,29 @@ namespace multiscaleModelling
                     };
 
                     // check each of coords
-                    foreach (var pair in valuesToCheck)
+                    for (int i = 0; i < valuesToCheck.Count; i++)
                     {
-                        int gainValue = Utils.getGrainIdFromCoords(pair[0], pair[1], previousStepArray);
-                        if (gainValue != 0)
+                        if (valuesToCheck[i][0] >= 0 && valuesToCheck[i][0] < xSize && valuesToCheck[i][1] >= 0 && valuesToCheck[i][1] < ySize)
                         {
-                            countersOfGrainsSurroundingCell[gainValue] += 1;
+                            int gainValue = Utils.getGrainIdFromCoords(valuesToCheck[i][0], valuesToCheck[i][1], ref previousStepArray);
+                            if (gainValue != 0)
+                            {
+                                //countersOfGrainsSurroundingCell[gainValue] += 1;
+                                if (countersOfGrainsSurroundingCell.ContainsKey(gainValue))
+                                    countersOfGrainsSurroundingCell[gainValue] += 1;
+                                else
+                                    countersOfGrainsSurroundingCell.Add(gainValue, 1);
+                            }
                         }
                     }
                     // check which grainIds are in neighbourhood
-                    int highestValue = -1;
-                    int mostPopularGrainId = -1;
-                    for (int i = 0; i < countersOfGrainsSurroundingCell.Count; i++)
+                    //int highestValue = -1;
+                    //int mostPopularGrainId = -1;
+                    if (countersOfGrainsSurroundingCell.Count > 0)
+                    {
+                        space[c.row, c.column].grainId = countersOfGrainsSurroundingCell.Aggregate((a, b) => a.Value > b.Value ? a : b).Key;
+                    }
+                    /*for (int i = 0; i < countersOfGrainsSurroundingCell.Count; i++)
                     {
                         if (countersOfGrainsSurroundingCell[i] > 0)
                         {
@@ -331,17 +379,114 @@ namespace multiscaleModelling
                                 highestValue = countersOfGrainsSurroundingCell[mostPopularGrainId];
                             }
                         }                        
-                    }
+                    }*/
                     // change to most popular surrounding if any surrounding found
-                    if (mostPopularGrainId > -1)
-                        space[c.row, c.column].grainId = mostPopularGrainId;
+                    //if (mostPopularGrainId > -1)
+                    //    space[c.row, c.column].grainId = mostPopularGrainId;
                 }
             }
+        }
+
+        private void addInclusios()
+        {
+            // add new color, same for all inclusions
+            colorArray.Add(new byte[] { 0, 0, 0, 255});
+            // create each inclustion
+            Random rng = new Random();
+            for (int i = 0; i < precipitatesTextbox.Value; i++)
+            {
+                int Nmax = 0;
+                int grainRadius = rng.Next((int)precipitatesRadiusFromTextbox.Value, (int)precipitatesRadiusToTextbox.Value);
+                int xLocation = rng.Next(0, (int)xSize);
+                int yLocation = rng.Next(0, (int)ySize);
+                if (randomPositionRadio.Checked == true)
+                {
+                    while (neighboursInRange(grainRadius + 2, space[xLocation, yLocation], nucleonAmmount + 1).Count > 0 && Nmax < Math.Pow(xSize + ySize, 2.0))
+                    {
+                        xLocation = rng.Next(0, (int)xSize);
+                        yLocation = rng.Next(0, (int)ySize);
+                        Nmax += 1;
+                    }
+                }
+                else
+                {
+                    while ((!isGrainBoundary(space[xLocation, yLocation]) || neighboursInRange(grainRadius + 2, space[xLocation, yLocation], nucleonAmmount + 1).Count > 0) && Nmax < Math.Pow(xSize + ySize, 2.0))
+                    {
+                        xLocation = rng.Next(0, (int)xSize);
+                        yLocation = rng.Next(0, (int)ySize);
+                        Nmax += 1;
+                    }
+                }
+                if (Nmax < Math.Pow(xSize + ySize, 2.0))
+                    forceGrainIdInRange(grainRadius, space[xLocation, yLocation]);
+            }
+            nucleonAmmount += 1;
             // once finished, add to array of steps
             stepsAsBytes.Add(crateByteArray());
             this.Invoke(new Action(() => {
                 showImage(stepsAsBytes.Count - 1);
             }));
+        }
+
+        private bool isGrainBoundary(Cell localCell)
+        {
+            // check if more than 1 grain color is in range of 1
+            List<int> neighboursList = neighboursInRange(1, localCell);
+            if (neighboursList.Count > 1 && !neighboursList.Contains(nucleonAmmount + 1))
+                return true;
+            return false;
+        }
+
+        private List<int> neighboursInRange(int range, Cell checkedCell, int searchedGrainId=-1)
+        {
+            // first initiate function variables
+            List<int> neighbourList = new List<int>();
+            int checkedLocationRow = checkedCell.row;
+            int checkedLocationColumn = checkedCell.column;
+            Random rng = new Random();
+            // now search space for neighbour colors
+            // look only in cells +- range from cell
+            for (int _col = checkedLocationColumn - range; _col <= checkedLocationColumn + range; _col++)
+            {
+                for (int _row = checkedLocationRow - range; _row <= checkedLocationRow + range; _row++)
+                {
+                    if (_row > 0 && _col > 0 && _row < xSize && _col < ySize)
+                    {
+                        if (searchedGrainId == -1)
+                        {
+                            if (space[_row, _col].grainId > 0 && !neighbourList.Contains(space[_row, _col].grainId))
+                            {
+                                neighbourList.Add(space[_row, _col].grainId);
+                            }
+                        }
+                        else
+                        {
+                            if (space[_row, _col].grainId == searchedGrainId && !neighbourList.Contains(space[_row, _col].grainId))
+                            {
+                                neighbourList.Add(space[_row, _col].grainId);
+                            }
+                        }
+                    }
+                }
+            }
+            return neighbourList;
+        }
+
+        private void forceGrainIdInRange(int range, Cell checkedCell)
+        {
+            int checkedLocationRow = checkedCell.row;
+            int checkedLocationColumn = checkedCell.column;
+            Random rng = new Random();
+            // now search space for neighbour colors
+            // look only in cells +- range from cell
+            for (int _col = checkedLocationColumn - range; _col <= checkedLocationColumn + range; _col++)
+            {
+                for (int _row = checkedLocationRow - range; _row <= checkedLocationRow + range; _row++)
+                {
+                    if (_row > 0 && _col > 0 && _row < xSize && _col < ySize && (Math.Pow((_row - checkedLocationRow), 2.0) + Math.Pow((_col - checkedLocationColumn), 2.0)) <= Math.Pow(range, 2.0))
+                        space[_row, _col].grainId = nucleonAmmount + 1;
+                }
+            }
         }
 
         private void saveToFile(string _filename = null)
@@ -350,6 +495,7 @@ namespace multiscaleModelling
             string endOfLine = "\n";
             // save content of space to file
             string fileContent = xSize.ToString() + delimeter + ySize.ToString() + delimeter + nucleonAmmount + endOfLine; // first line is width, height and number of nucleons
+            fileContent += precipitatesTextbox.Value.ToString() + delimeter + precipitatesRadiusFromTextbox.Value.ToString() + delimeter + precipitatesRadiusToTextbox.Value.ToString() + delimeter + (gbPositionRadio.Checked ? 1 : 0) + endOfLine; // second line is number of inclusions and their min and max range and mode (random/grain boundary)
             for (int i = 0; i < xSize; i++)
             {
                 for (int j = 0; j < ySize; j++)
@@ -364,33 +510,38 @@ namespace multiscaleModelling
             if (_filename != null)
                 filename = _filename;
             else
-                filename = "CA-export-"+DateTime.Now.ToString("yyyy-MM-dd_HH-mm");
+                filename = "CA-export-" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm");
             File.WriteAllText(filename + ".csv", fileContent);
-        }
-
-        private void firstStepButton_Click(object sender, EventArgs e)
-        {
-            showImage(1);
-        }
-
-        private void previousStepButton_Click(object sender, EventArgs e)
-        {
-            showImage(Int32.Parse(currentStepLabel.Text) - 1);
-        }
-
-        private void nextStepButton_Click(object sender, EventArgs e)
-        {
-            showImage(Int32.Parse(currentStepLabel.Text) + 1);
-        }
-
-        private void lastStepButton_Click(object sender, EventArgs e)
-        {
-            showImage(stepsAsBytes.Count - 1);
         }
 
         private void breakButton_Click(object sender, EventArgs e)
         {
             forceBreak = true;
+        }
+
+        private void precipiratesRadiusFromTextbox_ValueChanged(object sender, EventArgs e)
+        {
+            if (precipitatesRadiusToTextbox.Value < precipitatesRadiusFromTextbox.Value)
+                precipitatesRadiusToTextbox.Value = precipitatesRadiusFromTextbox.Value;
+        }
+
+        private void precipitatesRadiusToTextbox_ValueChanged(object sender, EventArgs e)
+        {
+            if (precipitatesRadiusFromTextbox.Value > precipitatesRadiusToTextbox.Value)
+                precipitatesRadiusFromTextbox.Value = precipitatesRadiusToTextbox.Value;
+        }
+
+        private void precipitatesTextbox_ValueChanged(object sender, EventArgs e)
+        {
+            if ((int)precipitatesTextbox.Value > 0)
+                precipitatesPanel.Visible = true;
+            else
+                precipitatesPanel.Visible = false;
+        }
+
+        private void stepSlider_Scroll(object sender, EventArgs e)
+        {
+            showImage(stepSlider.Value - 1);
         }
     }
 }
