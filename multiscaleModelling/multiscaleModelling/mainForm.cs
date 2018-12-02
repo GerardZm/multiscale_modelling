@@ -144,6 +144,11 @@ namespace multiscaleModelling
                     createColorPalette();
                     // save intial state
                     stepsAsBytes.Add(crateByteArray());
+                    // now inclusions
+                    if ((int)precipitatesTextbox.Value > 0)
+                    {
+                        addInclusios();
+                    }
                     // then propagate until all cells are assigned to grains
                     while (hasUnassignedElement() && !forceBreak)
                     {
@@ -303,7 +308,7 @@ namespace multiscaleModelling
             }
             return false;
         }
-        
+
         private void propagate()
         {
             // iterate through whole array and propagate nucleon growth
@@ -312,9 +317,15 @@ namespace multiscaleModelling
             {
                 if (c.grainId == 0) // value change will occur only in currently independent cells
                 {
+                    Dictionary<int, int> countersOfGrainsSurroundingCell = neighboursInRange(previousStepArray, 1, c);
+                    if (countersOfGrainsSurroundingCell.Count > 0)
+                    {
+                        int k = countersOfGrainsSurroundingCell.Aggregate((a, b) => a.Value > b.Value ? a : b).Key;
+                        space[c.row, c.column].grainId = k;
+                    }
                     // create counters for each color
                     //List<int> countersOfGrainsSurroundingCell = new List<int>();
-                    Dictionary<int, int> countersOfGrainsSurroundingCell = new Dictionary<int, int>();
+                    //Dictionary<int, int> countersOfGrainsSurroundingCell = new Dictionary<int, int>();
                     /*for (int i = 0; i <= nucleonAmmountTextbox.Value; i++)
                     {
                         countersOfGrainsSurroundingCell.Add(0); // counter initiated with 0
@@ -329,7 +340,7 @@ namespace multiscaleModelling
                      *  -------
                      */
                     // generate array with coords to be checked
-                    List<int[]> valuesToCheck = new List<int[]> {
+                    /*List<int[]> valuesToCheck = new List<int[]> {
                         new int[] { c.row - 1, c.column - 1 },
                         new int[] { c.row - 1, c.column },
                         new int[] { c.row - 1, c.column + 1 },
@@ -359,10 +370,12 @@ namespace multiscaleModelling
                     // check which grainIds are in neighbourhood
                     //int highestValue = -1;
                     //int mostPopularGrainId = -1;
+                    if (precipitatesTextbox.Value > 0)
+                        countersOfGrainsSurroundingCell.Remove(nucleonAmmount);
                     if (countersOfGrainsSurroundingCell.Count > 0)
                     {
                         space[c.row, c.column].grainId = countersOfGrainsSurroundingCell.Aggregate((a, b) => a.Value > b.Value ? a : b).Key;
-                    }
+                    }*/
                     /*for (int i = 0; i < countersOfGrainsSurroundingCell.Count; i++)
                     {
                         if (countersOfGrainsSurroundingCell[i] > 0)
@@ -399,26 +412,28 @@ namespace multiscaleModelling
                 int grainRadius = rng.Next((int)precipitatesRadiusFromTextbox.Value, (int)precipitatesRadiusToTextbox.Value);
                 int xLocation = rng.Next(0, (int)xSize);
                 int yLocation = rng.Next(0, (int)ySize);
-                if (randomPositionRadio.Checked == true)
+                if (randomPositionRadio.Checked == true && stepsAsBytes.Count == 1) // random in the begining
                 {
-                    while (neighboursInRange(grainRadius + 2, space[xLocation, yLocation], nucleonAmmount + 1).Count > 0 && Nmax < Math.Pow(xSize + ySize, 2.0))
+                    while (neighboursInRange(space, grainRadius + 2, space[xLocation, yLocation], nucleonAmmount + 1).Count > 0 && Nmax < Math.Pow(xSize + ySize, 2.0))
                     {
                         xLocation = rng.Next(0, (int)xSize);
                         yLocation = rng.Next(0, (int)ySize);
                         Nmax += 1;
                     }
+                    if (Nmax < Math.Pow(xSize + ySize, 2.0))
+                        forceGrainIdInRange(grainRadius, space[xLocation, yLocation]);
                 }
-                else
+                else if (gbPositionRadio.Checked == true) // grain boundary in the end
                 {
-                    while ((!isGrainBoundary(space[xLocation, yLocation]) || neighboursInRange(grainRadius + 2, space[xLocation, yLocation], nucleonAmmount + 1).Count > 0) && Nmax < Math.Pow(xSize + ySize, 2.0))
+                    while ((!isGrainBoundary(space[xLocation, yLocation]) || neighboursInRange(space, grainRadius + 2, space[xLocation, yLocation], nucleonAmmount + 1).Count > 0) && Nmax < Math.Pow(xSize + ySize, 2.0))
                     {
                         xLocation = rng.Next(0, (int)xSize);
                         yLocation = rng.Next(0, (int)ySize);
                         Nmax += 1;
                     }
+                    if (Nmax < Math.Pow(xSize + ySize, 2.0))
+                        forceGrainIdInRange(grainRadius, space[xLocation, yLocation]);
                 }
-                if (Nmax < Math.Pow(xSize + ySize, 2.0))
-                    forceGrainIdInRange(grainRadius, space[xLocation, yLocation]);
             }
             nucleonAmmount += 1;
             // once finished, add to array of steps
@@ -428,22 +443,37 @@ namespace multiscaleModelling
             }));
         }
 
+        private bool matchesShape(int _centerRow, int _centerCol, int _row, int _col, int range)
+        {
+            bool res = false;
+            if (this.circleShapeRadio.Checked == true)
+            {
+                if ((Math.Pow((_row - _centerRow), 2.0) + Math.Pow((_col - _centerCol), 2.0)) <= Math.Pow(range, 2.0))
+                    return true;
+            }
+            else if (this.squareShapeRadio.Checked == true)
+            {
+                if ((Math.Abs(_row - _centerRow) < range) && (Math.Abs(_col - _centerCol) < range))
+                    return true;
+            }
+            return res;
+        }
+
         private bool isGrainBoundary(Cell localCell)
         {
             // check if more than 1 grain color is in range of 1
-            List<int> neighboursList = neighboursInRange(1, localCell);
-            if (neighboursList.Count > 1 && !neighboursList.Contains(nucleonAmmount + 1))
+            Dictionary<int, int> neighboursList = neighboursInRange(space, 1, localCell);
+            if (neighboursList.Count > 1 && !neighboursList.ContainsKey(nucleonAmmount + 1))
                 return true;
             return false;
         }
 
-        private List<int> neighboursInRange(int range, Cell checkedCell, int searchedGrainId=-1)
+        private Dictionary<int, int> neighboursInRange(Cell[,] _space, int range, Cell checkedCell, int searchedGrainId=-1, bool nearestNeighbours = false, bool furtherNeighbours = false)
         {
             // first initiate function variables
-            List<int> neighbourList = new List<int>();
+            Dictionary<int, int> neighbourList = new Dictionary<int, int>();
             int checkedLocationRow = checkedCell.row;
             int checkedLocationColumn = checkedCell.column;
-            Random rng = new Random();
             // now search space for neighbour colors
             // look only in cells +- range from cell
             for (int _col = checkedLocationColumn - range; _col <= checkedLocationColumn + range; _col++)
@@ -452,23 +482,63 @@ namespace multiscaleModelling
                 {
                     if (_row > 0 && _col > 0 && _row < xSize && _col < ySize)
                     {
+                        if (_row == checkedLocationRow && _col == checkedLocationColumn)
+                            continue;
+                        if (nearestNeighbours == true)
+                        {
+                            /* if nearest, search in cross:
+                             *  -------
+                             *  | |o| |
+                             *  -------
+                             *  |o|x|o|
+                             *  -------
+                             *  | |o| |
+                             *  -------
+                             *  If entry not one of circles, skip further part
+                             */
+                            if (_col != checkedLocationColumn || _row != checkedLocationRow)
+                                continue;
+                        }
+                        else if (furtherNeighbours == true)
+                        {
+                            /* if further, search in rotated cross:
+                             *  -------
+                             *  |o| |o|
+                             *  -------
+                             *  | |x| |
+                             *  -------
+                             *  |o| |o|
+                             *  -------
+                             *  If entry not one of circles, skip further part
+                             */
+                            if (_col == checkedLocationColumn || _row == checkedLocationRow)
+                                continue;
+                        }
                         if (searchedGrainId == -1)
                         {
-                            if (space[_row, _col].grainId > 0 && !neighbourList.Contains(space[_row, _col].grainId))
+                            if (_space[_row, _col].grainId > 0)
                             {
-                                neighbourList.Add(space[_row, _col].grainId);
+                                if (neighbourList.ContainsKey(_space[_row, _col].grainId))
+                                    neighbourList[_space[_row, _col].grainId] += 1;
+                                else
+                                    neighbourList.Add(_space[_row, _col].grainId, 1);
                             }
                         }
                         else
                         {
-                            if (space[_row, _col].grainId == searchedGrainId && !neighbourList.Contains(space[_row, _col].grainId))
+                            if (_space[_row, _col].grainId == searchedGrainId)
                             {
-                                neighbourList.Add(space[_row, _col].grainId);
+                                if (neighbourList.ContainsKey(_space[_row, _col].grainId))
+                                    neighbourList[_space[_row, _col].grainId] += 1;
+                                else
+                                    neighbourList.Add(_space[_row, _col].grainId, 1);
                             }
                         }
                     }
                 }
             }
+            if (precipitatesTextbox.Value > 0)
+                neighbourList.Remove(nucleonAmmount);
             return neighbourList;
         }
 
@@ -483,7 +553,7 @@ namespace multiscaleModelling
             {
                 for (int _row = checkedLocationRow - range; _row <= checkedLocationRow + range; _row++)
                 {
-                    if (_row > 0 && _col > 0 && _row < xSize && _col < ySize && (Math.Pow((_row - checkedLocationRow), 2.0) + Math.Pow((_col - checkedLocationColumn), 2.0)) <= Math.Pow(range, 2.0))
+                    if (_row > 0 && _col > 0 && _row < xSize && _col < ySize && (matchesShape(checkedLocationRow, checkedLocationColumn, _row, _col, range)))
                         space[_row, _col].grainId = nucleonAmmount + 1;
                 }
             }
@@ -514,6 +584,60 @@ namespace multiscaleModelling
             File.WriteAllText(filename + ".csv", fileContent);
         }
 
+        private bool fulfillsControlRule1(ref Cell[,] _space, int _row, int _col)
+        {
+            Dictionary<int, int> coloredNeighbourDict = neighboursInRange(_space, 1, _space[_row, _col]);
+            KeyValuePair<int, int> highestNeighboursCountEntry = coloredNeighbourDict.Aggregate((a, b) => a.Value > b.Value ? a : b);
+            if (highestNeighboursCountEntry.Value >= 5)
+            {
+                _space[_row, _col].grainId = highestNeighboursCountEntry.Key;
+                return true;
+            }
+            return false;
+        }
+
+        private bool fulfillsControlRule2(ref Cell[,] _space, int _row, int _col)
+        {
+            Dictionary<int, int> coloredNeighbourDict = neighboursInRange(_space, 1, _space[_row, _col]);
+            KeyValuePair<int, int> highestNeighboursCountEntry = coloredNeighbourDict.Aggregate((a, b) => a.Value > b.Value ? a : b);
+            if (highestNeighboursCountEntry.Value >= 3)
+            {
+                _space[_row, _col].grainId = highestNeighboursCountEntry.Key;
+                return true;
+            }
+            return false;
+        }
+
+        private bool fulfillsControlRule3(ref Cell[,] _space, int _row, int _col)
+        {
+            Dictionary<int, int> coloredNeighbourDict = neighboursInRange(_space, 1, _space[_row, _col]);
+            KeyValuePair<int, int> highestNeighboursCountEntry = coloredNeighbourDict.Aggregate((a, b) => a.Value > b.Value ? a : b);
+            if (highestNeighboursCountEntry.Value >= 3)
+            {
+                _space[_row, _col].grainId = highestNeighboursCountEntry.Key;
+                return true;
+            }
+            return false;
+        }
+
+        private bool fulfillsControlRule4(ref Cell[,] _space, int _row, int _col)
+        {
+            Random rng = new Random();
+            int randomPercent = rng.Next(0, 100);
+            if (randomPercent > grainBoundaryShapeControlTextbox.Value)
+                return false;
+            Dictionary<int, int> neighbours = neighboursInRange(_space, 1, _space[_row, _col]);
+            if (neighbours.Count > 0)
+            {
+                List<int> grainIdsInRange = new List<int>();
+                foreach (KeyValuePair<int, int> keyValPair in neighbours)
+                    grainIdsInRange.Add(keyValPair.Key);
+                _space[_row, _col].grainId = Utils.randomlyDecideGrainId(grainIdsInRange.Count);
+                return true;
+            }
+            return false;
+        }
+
         private void breakButton_Click(object sender, EventArgs e)
         {
             forceBreak = true;
@@ -542,6 +666,14 @@ namespace multiscaleModelling
         private void stepSlider_Scroll(object sender, EventArgs e)
         {
             showImage(stepSlider.Value - 1);
+        }
+
+        private void grainBoundaryShapeControlCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (grainBoundaryShapeControlCheckbox.Checked)
+                grainBoundaryShapeControlPanel.Visible = true;
+            else
+                grainBoundaryShapeControlPanel.Visible = false;
         }
     }
 }

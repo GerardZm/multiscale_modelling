@@ -36,13 +36,11 @@ namespace multiscaleModelling
             }
         }
 
-        public static int randomlyDecideGrainId(int grainId1, int grainId2)
+        public static int randomlyDecideGrainId(int grainIdsCount)
         {
             Random rng = new Random();
-            int value = rng.Next(0, 1);
-            if (value == 0)
-                return grainId1;
-            return grainId2;
+            int value = rng.Next(0, grainIdsCount - 1);
+            return value;
         }
 
         public static bool isColorSimilar(byte[] sourceColor, byte[] destColor)
