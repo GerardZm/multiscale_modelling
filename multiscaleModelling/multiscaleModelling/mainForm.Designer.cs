@@ -70,6 +70,8 @@
             this.label4 = new System.Windows.Forms.Label();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.breakButton = new System.Windows.Forms.Button();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.label12 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
@@ -140,6 +142,8 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.label12);
+            this.panel1.Controls.Add(this.comboBox1);
             this.panel1.Controls.Add(this.grainBoundaryShapeControlPanel);
             this.panel1.Controls.Add(this.grainBoundaryShapeControlCheckbox);
             this.panel1.Controls.Add(this.precipitatesPanel);
@@ -564,6 +568,27 @@
             this.breakButton.UseVisualStyleBackColor = true;
             this.breakButton.Click += new System.EventHandler(this.breakButton_Click);
             // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Items.AddRange(new object[] {
+            "",
+            "Substructure",
+            "Dual phrase"});
+            this.comboBox1.Location = new System.Drawing.Point(124, 87);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(121, 21);
+            this.comboBox1.TabIndex = 10;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(121, 68);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(53, 13);
+            this.label12.TabIndex = 13;
+            this.label12.Text = "Structure:";
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -651,6 +676,8 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.NumericUpDown grainBoundaryShapeControlTextbox;
         private System.Windows.Forms.CheckBox grainBoundaryShapeControlCheckbox;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.ComboBox comboBox1;
     }
 }
 

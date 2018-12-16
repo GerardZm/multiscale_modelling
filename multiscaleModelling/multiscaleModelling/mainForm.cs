@@ -21,6 +21,7 @@ namespace multiscaleModelling
         int ySize; // columns
         int nucleonAmmount;
         bool forceBreak = false;
+        Random rng = new Random();
 
         public mainForm()
         {
@@ -98,7 +99,7 @@ namespace multiscaleModelling
                     nucleonAmmountTextbox.Value = nucleonAmmount -= 1;
                 }
                 // once finished, create only single, last step image and show it
-                stepsAsBytes.Add(crateByteArray());
+                stepsAsBytes.Add(createByteArray());
                 showImage(0);
             }
         }
@@ -143,7 +144,7 @@ namespace multiscaleModelling
                     createSpace();
                     createColorPalette();
                     // save intial state
-                    stepsAsBytes.Add(crateByteArray());
+                    stepsAsBytes.Add(createByteArray());
                     // now inclusions
                     if ((int)precipitatesTextbox.Value > 0)
                     {
@@ -155,10 +156,14 @@ namespace multiscaleModelling
                         propagate();
                         // once finished, add to array of steps
                         Thread.Sleep(5);
-                        stepsAsBytes.Add(crateByteArray());
-                        this.Invoke(new Action(() => {
-                            showImage(stepsAsBytes.Count - 1);
-                        }));
+                        byte[] currentStepByteArray = createByteArray();
+                        if (currentStepByteArray != stepsAsBytes.Last())
+                        {
+                            stepsAsBytes.Add(currentStepByteArray);
+                            this.Invoke(new Action(() => {
+                                showImage(stepsAsBytes.Count - 1);
+                            }));
+                        }
                     }
                     // now inclusions
                     if ((int)precipitatesTextbox.Value > 0)
@@ -205,7 +210,7 @@ namespace multiscaleModelling
                     }
                 }
                 // and create nucleons in random places of created space
-                Random rng = new Random();
+                //Random rng = new Random();
                 for (int i = 1; i <= nucleonAmmountTextbox.Value; i++)
                 {
                     // assign initial value to random cells
@@ -240,7 +245,7 @@ namespace multiscaleModelling
 
         private byte[] createNewColor()
         {
-            Random rng = new Random();
+            //Random rng = new Random();
             // B G R
             byte blue = (byte)rng.Next(0, 200);
             byte green = (byte)rng.Next(0, 200);
@@ -258,7 +263,7 @@ namespace multiscaleModelling
             this.stepCountLabel.Text = (stepsAsBytes.Count-1).ToString();
         }
 
-        private byte[] crateByteArray()
+        private byte[] createByteArray()
         {
             // create BGRA palette image from current state of space
             // each cell of space is described by 4 values representing color value of RGBA palette (with different color sequence, thus BGRA)
@@ -317,11 +322,27 @@ namespace multiscaleModelling
             {
                 if (c.grainId == 0) // value change will occur only in currently independent cells
                 {
-                    Dictionary<int, int> countersOfGrainsSurroundingCell = neighboursInRange(previousStepArray, 1, c);
-                    if (countersOfGrainsSurroundingCell.Count > 0)
+                    if (grainBoundaryShapeControlCheckbox.Checked == false)
                     {
-                        int k = countersOfGrainsSurroundingCell.Aggregate((a, b) => a.Value > b.Value ? a : b).Key;
-                        space[c.row, c.column].grainId = k;
+                        Dictionary<int, int> countersOfGrainsSurroundingCell = neighboursInRange(previousStepArray, 1, c);
+                        if (countersOfGrainsSurroundingCell.Count > 0)
+                        {
+                            int k = countersOfGrainsSurroundingCell.Aggregate((a, b) => a.Value > b.Value ? a : b).Key;
+                            space[c.row, c.column].grainId = k;
+                        }
+                    }
+                    else
+                    {
+                        if (!fulfillsControlRule1(ref previousStepArray, c))
+                        {
+                            if (!fulfillsControlRule2(ref previousStepArray, c))
+                            {
+                                if (!fulfillsControlRule3(ref previousStepArray, c))
+                                {
+                                    fulfillsControlRule4(ref previousStepArray, c);
+                                }
+                            }
+                        }
                     }
                     // create counters for each color
                     //List<int> countersOfGrainsSurroundingCell = new List<int>();
@@ -405,7 +426,7 @@ namespace multiscaleModelling
             // add new color, same for all inclusions
             colorArray.Add(new byte[] { 0, 0, 0, 255});
             // create each inclustion
-            Random rng = new Random();
+            //Random rng = new Random();
             for (int i = 0; i < precipitatesTextbox.Value; i++)
             {
                 int Nmax = 0;
@@ -437,7 +458,7 @@ namespace multiscaleModelling
             }
             nucleonAmmount += 1;
             // once finished, add to array of steps
-            stepsAsBytes.Add(crateByteArray());
+            stepsAsBytes.Add(createByteArray());
             this.Invoke(new Action(() => {
                 showImage(stepsAsBytes.Count - 1);
             }));
@@ -480,11 +501,11 @@ namespace multiscaleModelling
             {
                 for (int _row = checkedLocationRow - range; _row <= checkedLocationRow + range; _row++)
                 {
-                    if (_row > 0 && _col > 0 && _row < xSize && _col < ySize)
+                    if (_row >= 0 && _col >= 0 && _row < xSize && _col < ySize)
                     {
                         if (_row == checkedLocationRow && _col == checkedLocationColumn)
                             continue;
-                        if (nearestNeighbours == true)
+                        if (nearestNeighbours == true && furtherNeighbours == false)
                         {
                             /* if nearest, search in cross:
                              *  -------
@@ -499,7 +520,7 @@ namespace multiscaleModelling
                             if (_col != checkedLocationColumn || _row != checkedLocationRow)
                                 continue;
                         }
-                        else if (furtherNeighbours == true)
+                        if (nearestNeighbours == false && furtherNeighbours == true)
                         {
                             /* if further, search in rotated cross:
                              *  -------
@@ -546,7 +567,7 @@ namespace multiscaleModelling
         {
             int checkedLocationRow = checkedCell.row;
             int checkedLocationColumn = checkedCell.column;
-            Random rng = new Random();
+            //Random rng = new Random();
             // now search space for neighbour colors
             // look only in cells +- range from cell
             for (int _col = checkedLocationColumn - range; _col <= checkedLocationColumn + range; _col++)
@@ -584,58 +605,85 @@ namespace multiscaleModelling
             File.WriteAllText(filename + ".csv", fileContent);
         }
 
-        private bool fulfillsControlRule1(ref Cell[,] _space, int _row, int _col)
+        private bool fulfillsControlRule1(ref Cell[,] _space, Cell c)
         {
-            Dictionary<int, int> coloredNeighbourDict = neighboursInRange(_space, 1, _space[_row, _col]);
-            KeyValuePair<int, int> highestNeighboursCountEntry = coloredNeighbourDict.Aggregate((a, b) => a.Value > b.Value ? a : b);
-            if (highestNeighboursCountEntry.Value >= 5)
+            Dictionary<int, int> coloredNeighbourDict = neighboursInRange(_space, 1, c);
+            if (coloredNeighbourDict.Count > 0)
             {
-                _space[_row, _col].grainId = highestNeighboursCountEntry.Key;
-                return true;
+                KeyValuePair<int, int> highestNeighboursCountEntry = coloredNeighbourDict.Aggregate((a, b) => a.Value > b.Value ? a : b);
+                if (highestNeighboursCountEntry.Value >= 5)
+                {
+                    space[c.row, c.column].grainId = highestNeighboursCountEntry.Key;
+                    return true;
+                }
             }
             return false;
         }
 
-        private bool fulfillsControlRule2(ref Cell[,] _space, int _row, int _col)
+        private bool fulfillsControlRule2(ref Cell[,] _space, Cell c)
         {
-            Dictionary<int, int> coloredNeighbourDict = neighboursInRange(_space, 1, _space[_row, _col]);
-            KeyValuePair<int, int> highestNeighboursCountEntry = coloredNeighbourDict.Aggregate((a, b) => a.Value > b.Value ? a : b);
-            if (highestNeighboursCountEntry.Value >= 3)
+            Dictionary<int, int> coloredNeighbourDict = neighboursInRange(_space, 1, c, -1, true, false);
+            if (coloredNeighbourDict.Count > 0)
             {
-                _space[_row, _col].grainId = highestNeighboursCountEntry.Key;
-                return true;
+                KeyValuePair<int, int> highestNeighboursCountEntry = coloredNeighbourDict.Aggregate((a, b) => a.Value > b.Value ? a : b);
+                if (highestNeighboursCountEntry.Value >= 3)
+                {
+                    space[c.row, c.column].grainId = highestNeighboursCountEntry.Key;
+                    return true;
+                }
             }
             return false;
         }
 
-        private bool fulfillsControlRule3(ref Cell[,] _space, int _row, int _col)
+        private bool fulfillsControlRule3(ref Cell[,] _space, Cell c)
         {
-            Dictionary<int, int> coloredNeighbourDict = neighboursInRange(_space, 1, _space[_row, _col]);
-            KeyValuePair<int, int> highestNeighboursCountEntry = coloredNeighbourDict.Aggregate((a, b) => a.Value > b.Value ? a : b);
-            if (highestNeighboursCountEntry.Value >= 3)
+            Dictionary<int, int> coloredNeighbourDict = neighboursInRange(_space, 1, c, -1, false, true);
+            if (coloredNeighbourDict.Count > 0)
             {
-                _space[_row, _col].grainId = highestNeighboursCountEntry.Key;
-                return true;
+                KeyValuePair<int, int> highestNeighboursCountEntry = coloredNeighbourDict.Aggregate((a, b) => a.Value > b.Value ? a : b);
+                if (highestNeighboursCountEntry.Value >= 3)
+                {
+                    space[c.row, c.column].grainId = highestNeighboursCountEntry.Key;
+                    return true;
+                }
             }
             return false;
         }
 
-        private bool fulfillsControlRule4(ref Cell[,] _space, int _row, int _col)
+        private bool fulfillsControlRule4(ref Cell[,] _space, Cell c)
         {
-            Random rng = new Random();
+            //Random rng = new Random();
             int randomPercent = rng.Next(0, 100);
             if (randomPercent > grainBoundaryShapeControlTextbox.Value)
                 return false;
-            Dictionary<int, int> neighbours = neighboursInRange(_space, 1, _space[_row, _col]);
+            Dictionary<int, int> countersOfGrainsSurroundingCell = neighboursInRange(_space, 1, c);
+            if (countersOfGrainsSurroundingCell.Count > 0)
+            {
+                int k = countersOfGrainsSurroundingCell.Aggregate((a, b) => a.Value > b.Value ? a : b).Key;
+                space[c.row, c.column].grainId = k;
+                return true;
+            }
+            /*Dictionary<int, int> neighbours = neighboursInRange(_space, 1, _space[_row, _col]);
             if (neighbours.Count > 0)
             {
                 List<int> grainIdsInRange = new List<int>();
                 foreach (KeyValuePair<int, int> keyValPair in neighbours)
                     grainIdsInRange.Add(keyValPair.Key);
-                _space[_row, _col].grainId = Utils.randomlyDecideGrainId(grainIdsInRange.Count);
+                _space[_row, _col].grainId = Utils.randomlyDecideGrainId(grainIdsInRange.Count) + 1;
                 return true;
-            }
+            }*/
             return false;
+        }
+
+        private List<Cell> getAllCellsOfSameId(int id)
+        {
+            List<Cell> cellsWithSameId = new List<Cell>();
+            foreach (Cell c in space)
+            {
+                if (c.grainId == id)
+                    cellsWithSameId.Add(c);
+            }
+            return cellsWithSameId;
         }
 
         private void breakButton_Click(object sender, EventArgs e)
