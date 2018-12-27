@@ -35,6 +35,8 @@
             this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label12 = new System.Windows.Forms.Label();
+            this.structureSelect = new System.Windows.Forms.ComboBox();
             this.grainBoundaryShapeControlPanel = new System.Windows.Forms.Panel();
             this.label11 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
@@ -70,8 +72,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.breakButton = new System.Windows.Forms.Button();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.label12 = new System.Windows.Forms.Label();
+            this.markBoundriesCheckbox = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
@@ -142,8 +143,9 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.markBoundriesCheckbox);
             this.panel1.Controls.Add(this.label12);
-            this.panel1.Controls.Add(this.comboBox1);
+            this.panel1.Controls.Add(this.structureSelect);
             this.panel1.Controls.Add(this.grainBoundaryShapeControlPanel);
             this.panel1.Controls.Add(this.grainBoundaryShapeControlCheckbox);
             this.panel1.Controls.Add(this.precipitatesPanel);
@@ -159,6 +161,27 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(319, 327);
             this.panel1.TabIndex = 2;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(121, 68);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(53, 13);
+            this.label12.TabIndex = 13;
+            this.label12.Text = "Structure:";
+            // 
+            // structureSelect
+            // 
+            this.structureSelect.FormattingEnabled = true;
+            this.structureSelect.Items.AddRange(new object[] {
+            "",
+            "Substructure",
+            "Dual phrase"});
+            this.structureSelect.Location = new System.Drawing.Point(124, 87);
+            this.structureSelect.Name = "structureSelect";
+            this.structureSelect.Size = new System.Drawing.Size(180, 21);
+            this.structureSelect.TabIndex = 10;
             // 
             // grainBoundaryShapeControlPanel
             // 
@@ -568,26 +591,15 @@
             this.breakButton.UseVisualStyleBackColor = true;
             this.breakButton.Click += new System.EventHandler(this.breakButton_Click);
             // 
-            // comboBox1
+            // markBoundriesCheckbox
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "",
-            "Substructure",
-            "Dual phrase"});
-            this.comboBox1.Location = new System.Drawing.Point(124, 87);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
-            this.comboBox1.TabIndex = 10;
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(121, 68);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(53, 13);
-            this.label12.TabIndex = 13;
-            this.label12.Text = "Structure:";
+            this.markBoundriesCheckbox.AutoSize = true;
+            this.markBoundriesCheckbox.Location = new System.Drawing.Point(124, 118);
+            this.markBoundriesCheckbox.Name = "markBoundriesCheckbox";
+            this.markBoundriesCheckbox.Size = new System.Drawing.Size(99, 17);
+            this.markBoundriesCheckbox.TabIndex = 14;
+            this.markBoundriesCheckbox.Text = "Mark boundries";
+            this.markBoundriesCheckbox.UseVisualStyleBackColor = true;
             // 
             // mainForm
             // 
@@ -677,7 +689,8 @@
         private System.Windows.Forms.NumericUpDown grainBoundaryShapeControlTextbox;
         private System.Windows.Forms.CheckBox grainBoundaryShapeControlCheckbox;
         private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox structureSelect;
+        private System.Windows.Forms.CheckBox markBoundriesCheckbox;
     }
 }
 

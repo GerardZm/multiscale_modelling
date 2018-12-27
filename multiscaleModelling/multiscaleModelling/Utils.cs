@@ -43,6 +43,15 @@ namespace multiscaleModelling
             return value;
         }
 
+        public static void emptySpace(ref Cell[,] space)
+        {
+            foreach (Cell cell in space)
+            {
+                space[cell.row, cell.column].grainId = 0;
+                space[cell.row, cell.column].canPropagate = true;
+            }
+        }
+
         public static bool isColorSimilar(byte[] sourceColor, byte[] destColor)
         {
             double max_dist = 30;
