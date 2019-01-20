@@ -35,6 +35,7 @@
             this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.markBoundriesCheckbox = new System.Windows.Forms.CheckBox();
             this.label12 = new System.Windows.Forms.Label();
             this.structureSelect = new System.Windows.Forms.ComboBox();
             this.grainBoundaryShapeControlPanel = new System.Windows.Forms.Panel();
@@ -72,7 +73,14 @@
             this.label4 = new System.Windows.Forms.Label();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.breakButton = new System.Windows.Forms.Button();
-            this.markBoundriesCheckbox = new System.Windows.Forms.CheckBox();
+            this.gbSelectedPanel = new System.Windows.Forms.Panel();
+            this.numberOfGrainsSelectedTextbox = new System.Windows.Forms.NumericUpDown();
+            this.gbPercentageTextbox = new System.Windows.Forms.Label();
+            this.gbPercentagePanel = new System.Windows.Forms.Panel();
+            this.label14 = new System.Windows.Forms.Label();
+            this.allGrainsSelectedRadio = new System.Windows.Forms.RadioButton();
+            this.numberOfGrainsSelectedRadio = new System.Windows.Forms.RadioButton();
+            this.gbClearPopulateSpaceButton = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
@@ -88,6 +96,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.nucleonAmmountTextbox)).BeginInit();
             this.stepShowPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.stepSlider)).BeginInit();
+            this.gbSelectedPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numberOfGrainsSelectedTextbox)).BeginInit();
+            this.gbPercentagePanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -143,6 +154,8 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.gbPercentagePanel);
+            this.panel1.Controls.Add(this.gbSelectedPanel);
             this.panel1.Controls.Add(this.markBoundriesCheckbox);
             this.panel1.Controls.Add(this.label12);
             this.panel1.Controls.Add(this.structureSelect);
@@ -161,6 +174,17 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(319, 327);
             this.panel1.TabIndex = 2;
+            // 
+            // markBoundriesCheckbox
+            // 
+            this.markBoundriesCheckbox.AutoSize = true;
+            this.markBoundriesCheckbox.Location = new System.Drawing.Point(124, 118);
+            this.markBoundriesCheckbox.Name = "markBoundriesCheckbox";
+            this.markBoundriesCheckbox.Size = new System.Drawing.Size(99, 17);
+            this.markBoundriesCheckbox.TabIndex = 14;
+            this.markBoundriesCheckbox.Text = "Mark boundries";
+            this.markBoundriesCheckbox.UseVisualStyleBackColor = true;
+            this.markBoundriesCheckbox.CheckedChanged += new System.EventHandler(this.markBoundriesCheckbox_CheckedChanged);
             // 
             // label12
             // 
@@ -591,15 +615,97 @@
             this.breakButton.UseVisualStyleBackColor = true;
             this.breakButton.Click += new System.EventHandler(this.breakButton_Click);
             // 
-            // markBoundriesCheckbox
+            // gbSelectedPanel
             // 
-            this.markBoundriesCheckbox.AutoSize = true;
-            this.markBoundriesCheckbox.Location = new System.Drawing.Point(124, 118);
-            this.markBoundriesCheckbox.Name = "markBoundriesCheckbox";
-            this.markBoundriesCheckbox.Size = new System.Drawing.Size(99, 17);
-            this.markBoundriesCheckbox.TabIndex = 14;
-            this.markBoundriesCheckbox.Text = "Mark boundries";
-            this.markBoundriesCheckbox.UseVisualStyleBackColor = true;
+            this.gbSelectedPanel.Controls.Add(this.gbClearPopulateSpaceButton);
+            this.gbSelectedPanel.Controls.Add(this.numberOfGrainsSelectedTextbox);
+            this.gbSelectedPanel.Controls.Add(this.numberOfGrainsSelectedRadio);
+            this.gbSelectedPanel.Controls.Add(this.allGrainsSelectedRadio);
+            this.gbSelectedPanel.Location = new System.Drawing.Point(124, 142);
+            this.gbSelectedPanel.Name = "gbSelectedPanel";
+            this.gbSelectedPanel.Size = new System.Drawing.Size(180, 80);
+            this.gbSelectedPanel.TabIndex = 15;
+            this.gbSelectedPanel.Visible = false;
+            // 
+            // numberOfGrainsSelectedTextbox
+            // 
+            this.numberOfGrainsSelectedTextbox.Location = new System.Drawing.Point(130, 28);
+            this.numberOfGrainsSelectedTextbox.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numberOfGrainsSelectedTextbox.Name = "numberOfGrainsSelectedTextbox";
+            this.numberOfGrainsSelectedTextbox.Size = new System.Drawing.Size(45, 20);
+            this.numberOfGrainsSelectedTextbox.TabIndex = 11;
+            this.numberOfGrainsSelectedTextbox.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numberOfGrainsSelectedTextbox.Visible = false;
+            this.numberOfGrainsSelectedTextbox.ValueChanged += new System.EventHandler(this.numberOfGrainsSelectedTextbox_ValueChanged);
+            // 
+            // gbPercentageTextbox
+            // 
+            this.gbPercentageTextbox.AutoSize = true;
+            this.gbPercentageTextbox.Location = new System.Drawing.Point(3, 3);
+            this.gbPercentageTextbox.Name = "gbPercentageTextbox";
+            this.gbPercentageTextbox.Size = new System.Drawing.Size(19, 13);
+            this.gbPercentageTextbox.TabIndex = 16;
+            this.gbPercentageTextbox.Text = "88";
+            // 
+            // gbPercentagePanel
+            // 
+            this.gbPercentagePanel.Controls.Add(this.label14);
+            this.gbPercentagePanel.Controls.Add(this.gbPercentageTextbox);
+            this.gbPercentagePanel.Location = new System.Drawing.Point(223, 117);
+            this.gbPercentagePanel.Name = "gbPercentagePanel";
+            this.gbPercentagePanel.Size = new System.Drawing.Size(80, 19);
+            this.gbPercentagePanel.TabIndex = 17;
+            this.gbPercentagePanel.Visible = false;
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(32, 3);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(45, 13);
+            this.label14.TabIndex = 17;
+            this.label14.Text = "% of GB";
+            // 
+            // allGrainsSelectedRadio
+            // 
+            this.allGrainsSelectedRadio.AutoSize = true;
+            this.allGrainsSelectedRadio.Checked = true;
+            this.allGrainsSelectedRadio.Location = new System.Drawing.Point(4, 5);
+            this.allGrainsSelectedRadio.Name = "allGrainsSelectedRadio";
+            this.allGrainsSelectedRadio.Size = new System.Drawing.Size(110, 17);
+            this.allGrainsSelectedRadio.TabIndex = 12;
+            this.allGrainsSelectedRadio.TabStop = true;
+            this.allGrainsSelectedRadio.Text = "All grains selected";
+            this.allGrainsSelectedRadio.UseVisualStyleBackColor = true;
+            // 
+            // numberOfGrainsSelectedRadio
+            // 
+            this.numberOfGrainsSelectedRadio.AutoSize = true;
+            this.numberOfGrainsSelectedRadio.Location = new System.Drawing.Point(4, 28);
+            this.numberOfGrainsSelectedRadio.Name = "numberOfGrainsSelectedRadio";
+            this.numberOfGrainsSelectedRadio.Size = new System.Drawing.Size(128, 17);
+            this.numberOfGrainsSelectedRadio.TabIndex = 13;
+            this.numberOfGrainsSelectedRadio.Text = "No. of grains selected";
+            this.numberOfGrainsSelectedRadio.UseVisualStyleBackColor = true;
+            this.numberOfGrainsSelectedRadio.CheckedChanged += new System.EventHandler(this.numberOfGrainsSelectedRadio_CheckedChanged);
+            // 
+            // gbClearPopulateSpaceButton
+            // 
+            this.gbClearPopulateSpaceButton.Location = new System.Drawing.Point(7, 54);
+            this.gbClearPopulateSpaceButton.Name = "gbClearPopulateSpaceButton";
+            this.gbClearPopulateSpaceButton.Size = new System.Drawing.Size(168, 23);
+            this.gbClearPopulateSpaceButton.TabIndex = 18;
+            this.gbClearPopulateSpaceButton.Text = "Clear/populate space";
+            this.gbClearPopulateSpaceButton.UseVisualStyleBackColor = true;
+            this.gbClearPopulateSpaceButton.Click += new System.EventHandler(this.gbClearPopulateSpaceButton_Click);
             // 
             // mainForm
             // 
@@ -639,6 +745,11 @@
             this.stepShowPanel.ResumeLayout(false);
             this.stepShowPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.stepSlider)).EndInit();
+            this.gbSelectedPanel.ResumeLayout(false);
+            this.gbSelectedPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numberOfGrainsSelectedTextbox)).EndInit();
+            this.gbPercentagePanel.ResumeLayout(false);
+            this.gbPercentagePanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -691,6 +802,14 @@
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.ComboBox structureSelect;
         private System.Windows.Forms.CheckBox markBoundriesCheckbox;
+        private System.Windows.Forms.Panel gbPercentagePanel;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Label gbPercentageTextbox;
+        private System.Windows.Forms.Panel gbSelectedPanel;
+        private System.Windows.Forms.NumericUpDown numberOfGrainsSelectedTextbox;
+        private System.Windows.Forms.RadioButton numberOfGrainsSelectedRadio;
+        private System.Windows.Forms.RadioButton allGrainsSelectedRadio;
+        private System.Windows.Forms.Button gbClearPopulateSpaceButton;
     }
 }
 
