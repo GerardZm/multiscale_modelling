@@ -20,7 +20,10 @@ namespace multiscaleModelling
         int xSize; // rows
         int ySize; // columns
         int nucleonAmmount;
+        int boundaryCells = 0;
         bool forceBreak = false;
+        bool gbOnlyShown = false;
+        Cell[,] backupSpace;
         Random rng = new Random();
 
         public mainForm()
@@ -128,6 +131,7 @@ namespace multiscaleModelling
                 simulateButton.Enabled = false;
                 breakButton.Enabled = true;
                 panel1.Enabled = false;
+                boundaryCells = 0;
                 int structureSelectedIndex = structureSelect.SelectedIndex;
                 await Task.Run(() => {
                     xSize = (int)ySizeTextbox.Value;
@@ -165,7 +169,7 @@ namespace multiscaleModelling
                     if (structureSelectedIndex > 0)
                     {
                         // change structure to substructure/DP
-                        substructureCA();
+                        substructureCA(structureSelectedIndex);
                         stepsAsBytes.Add(createByteArray());
                         while (hasUnassignedElement() && !forceBreak)
                         {
@@ -194,6 +198,11 @@ namespace multiscaleModelling
                         stepsAsBytes.Add(createByteArray());
                     }
                 });
+                if (markBoundriesCheckbox.Checked == true)
+                {
+                    this.gbPercentageTextbox.Text = ((int)(((float)boundaryCells / (float)(xSize * ySize)) * 100.0)).ToString();
+                    this.gbPercentagePanel.Visible = true;
+                }
                 breakButton.Enabled = false;
                 showImage(stepsAsBytes.Count - 1); // show last image
                 if (stepsAsBytes.Count > 1)
@@ -357,22 +366,17 @@ namespace multiscaleModelling
                         if (countersOfGrainsSurroundingCell.Count > 0)
                         {
                             int k = countersOfGrainsSurroundingCell.Aggregate((a, b) => a.Value > b.Value ? a : b).Key;
-                            if (getAllCellsOfSameId(k)[0].canPropagate == true)
-                                space[c.row, c.column].grainId = k;
-                            else
+                            while (getAllCellsOfSameId(k)[0].canPropagate == false)
                             {
                                 countersOfGrainsSurroundingCell.Remove(k);
-                                if (countersOfGrainsSurroundingCell.Count > 0)
+                                if (countersOfGrainsSurroundingCell.Count == 0)
                                 {
-                                    KeyValuePair<int, int> highestKVPairInNeighbourhood = countersOfGrainsSurroundingCell.First();
-                                    foreach (KeyValuePair<int, int> kvPair in countersOfGrainsSurroundingCell)
-                                        if (kvPair.Value > highestKVPairInNeighbourhood.Value)
-                                        {
-                                            highestKVPairInNeighbourhood = kvPair;
-                                        }
-                                    space[c.row, c.column].grainId = highestKVPairInNeighbourhood.Key;
+                                    k = 0;
+                                    break;
                                 }
+                                k = countersOfGrainsSurroundingCell.Aggregate((a, b) => a.Value > b.Value ? a : b).Key;
                             }
+                            space[c.row, c.column].grainId = k;
                         }
                     }
                     else
@@ -510,9 +514,44 @@ namespace multiscaleModelling
 
         private void markBoundaries()
         {
-            foreach (Cell cell in space)
-                if (isGrainBoundary(cell))
-                    space[cell.row, cell.column].grainId = -1;
+            if (allGrainsSelectedRadio.Checked == true)
+            {
+                foreach (Cell cell in space)
+                    if (isGrainBoundary(cell))
+                    {
+                        space[cell.row, cell.column].grainId = -1;
+                        boundaryCells += 1;
+                    }
+            }
+            else if (numberOfGrainsSelectedRadio.Checked == true)
+            {
+                if ((int)numberOfGrainsSelectedTextbox.Value == nucleonAmmount)
+                {
+                    foreach (Cell cell in space)
+                        if (isGrainBoundary(cell))
+                        {
+                            space[cell.row, cell.column].grainId = -1;
+                            boundaryCells += 1;
+                        }
+                }
+                else
+                {
+                    List<int> grainIdsToChange = new List<int>();
+                    for (int i = 0; i < (int)numberOfGrainsSelectedTextbox.Value; i++)
+                    {
+                        int val = Utils.randomlyDecideGrainId(nucleonAmmount + 1);
+                        while (grainIdsToChange.Contains(val) || val == 0)
+                            val = Utils.randomlyDecideGrainId(nucleonAmmount + 1);
+                        grainIdsToChange.Add(val);
+                    }
+                    foreach (Cell cell in space)
+                        if (isGrainBoundary(cell) && grainIdsToChange.Contains(cell.grainId))
+                        {
+                            space[cell.row, cell.column].grainId = -1;
+                            boundaryCells += 1;
+                        }
+                }                
+            }
         }
 
         private bool matchesShape(int _centerRow, int _centerCol, int _row, int _col, int range)
@@ -762,7 +801,7 @@ namespace multiscaleModelling
             return false;
         }
 
-        private void substructureCA()
+        private void substructureCA(int selectedIndex)
         {
             int grainsCount = (nucleonAmmount + 8 - 1)/8;
             List<Cell> survivorsList = new List<Cell>();
@@ -773,12 +812,20 @@ namespace multiscaleModelling
             // clear globals
             Utils.emptySpace(ref space);
             // reassign grain ids to their original position
+            int changedColorsCount = 0;
             foreach (Cell entry in survivorsList)
             {
-                space[entry.row, entry.column].grainId = 1;
+                // if DP, change color to same
+                if (selectedIndex == 2)
+                    space[entry.row, entry.column].grainId = changedColorsCount = 1;
+                else if (selectedIndex == 1)
+                {
+                    space[entry.row, entry.column].grainId = entry.grainId;
+                    changedColorsCount += 1;
+                }
                 space[entry.row, entry.column].canPropagate = false;
             }
-            numberOfPoints = nucleonAmmount/2; // TODO: test
+            numberOfPoints = nucleonAmmount / 2; // TODO: test
             createSpace(false, 2);
         }
 
@@ -829,6 +876,53 @@ namespace multiscaleModelling
                 grainBoundaryShapeControlPanel.Visible = true;
             else
                 grainBoundaryShapeControlPanel.Visible = false;
+        }
+
+        private void numberOfGrainsSelectedCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            this.numberOfGrainsSelectedTextbox.Visible = !this.numberOfGrainsSelectedTextbox.Visible;
+        }
+
+        private void markBoundriesCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            gbSelectedPanel.Visible = markBoundriesCheckbox.Checked;
+        }
+
+        private void numberOfGrainsSelectedRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            numberOfGrainsSelectedTextbox.Visible = numberOfGrainsSelectedRadio.Checked;
+        }
+
+        private void numberOfGrainsSelectedTextbox_ValueChanged(object sender, EventArgs e)
+        {
+            if ((int)numberOfGrainsSelectedTextbox.Value > (int)nucleonAmmountTextbox.Value)
+                numberOfGrainsSelectedTextbox.Value = (int)nucleonAmmountTextbox.Value;
+        }
+
+        private void gbClearPopulateSpaceButton_Click(object sender, EventArgs e)
+        {
+            gbOnlyShown = !gbOnlyShown;
+            if (gbOnlyShown)
+            {
+                backupSpace = new Cell[xSize, ySize];
+                foreach (Cell c in space)
+                {
+                    backupSpace[c.row, c.column] = space[c.row, c.column];
+                    if (c.grainId != -1)
+                        space[c.row, c.column].grainId = 0;
+                }
+            }
+            else
+            {
+                foreach (Cell c in space)
+                {
+                    space[c.row, c.column] = backupSpace[c.row, c.column];
+                }
+            }
+            stepsAsBytes.Add(createByteArray());
+            this.Invoke(new Action(() => {
+                showImage(stepsAsBytes.Count - 1);
+            }));
         }
     }
 }
