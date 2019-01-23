@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace multiscaleModelling
 {
@@ -23,7 +24,7 @@ namespace multiscaleModelling
             return newArray;
         }
 
-        public static int getGrainIdFromCoords(int x, int y, Cell[,] array)
+        public static int getGrainIdFromCoords(int x, int y, ref Cell[,] array)
         {
             try
             {
@@ -35,13 +36,40 @@ namespace multiscaleModelling
             }
         }
 
-        public static int randomlyDecideGrainId(int grainId1, int grainId2)
+        public static int randomlyDecideGrainId(int grainIdsCount)
         {
             Random rng = new Random();
-            int value = rng.Next(0, 1);
-            if (value == 0)
-                return grainId1;
-            return grainId2;
+            int value = rng.Next(0, grainIdsCount - 1);
+            return value;
+        }
+
+        public static void emptySpace(ref Cell[,] space)
+        {
+            foreach (Cell cell in space)
+            {
+                space[cell.row, cell.column].grainId = 0;
+                space[cell.row, cell.column].canPropagate = true;
+            }
+        }
+
+        public static bool isColorSimilar(byte[] sourceColor, byte[] destColor)
+        {
+            double max_dist = 30;
+            double dst_red = Math.Pow(Convert.ToDouble(sourceColor[2]) - Convert.ToDouble(destColor[2]), 2.0);
+            double dst_green = Math.Pow(Convert.ToDouble(sourceColor[1]) - Convert.ToDouble(destColor[1]), 2.0);
+            double dst_blue = Math.Pow(Convert.ToDouble(sourceColor[0]) - Convert.ToDouble(destColor[0]), 2.0);
+            double dst_between_colors = Math.Sqrt(dst_red + dst_green + dst_blue);
+            if (dst_between_colors < max_dist)
+                return true;
+            return false;
+        }
+
+        public static bool colorAlreadyExistsInColorPalette(byte[] newColor, List<byte[]> colorPalette)
+        {
+            foreach (byte[] color in colorPalette)
+                if (isColorSimilar(color, newColor))
+                    return true;
+            return false;
         }
     }
 }
